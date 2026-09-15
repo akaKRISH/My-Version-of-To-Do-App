@@ -1,0 +1,41 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // User profile document: strictly partitioned to the authenticated user
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // Personal isolated tasks subcollection
+      match /tasks/{taskId} {
+        // Only the document owner can read and delete tasks
+        allow read, delete: if request.auth != null && request.auth.uid == userId;
+
+        // Validation for task creation:
+        // - Authenticated and scoped strictly to owner
+        // - Title must be non-empty string under 200 chars
+        // - Completed status must be a boolean
+        // - Server timestamp must match request.time
+        allow create: if request.auth != null
+          && request.auth.uid == userId
+          && request.resource.data.title is string
+          && request.resource.data.title.size() > 0
+          && request.resource.data.title.size() <= 200
+          && request.resource.data.completed is bool
+          && request.resource.data.createdAt == request.time;
+
+        // Validation for task updates:
+        // - Authenticated and scoped strictly to owner
+        // - Title and completed must satisfy types and limits
+        // - updatedAt timestamp must match request.time
+        allow update: if request.auth != null
+          && request.auth.uid == userId
+          && request.resource.data.title is string
+          && request.resource.data.title.size() > 0
+          && request.resource.data.title.size() <= 200
+          && request.resource.data.completed is bool
+          && request.resource.data.updatedAt == request.time;
+      }
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Multi-User Todo List",
+  "description": "Production-quality multi-user real-time todo list with private, isolated task lists backed by Cloud Firestore and Firebase Authentication.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
